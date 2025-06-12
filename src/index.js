@@ -11,32 +11,25 @@ export const initFont = ({ height=DEFAULT_CHAR_HEIGHT, ...chars }={}, ctx) => {
         return
     }
 
-    const bin2arr = (bin, width) => bin.match(new RegExp(`.{${width}}`, 'g'));
-    const isNumber = code => code > 0;
-
     return (string, x=0, y=0, size=24, color=DEFAULT_COLOR) => {
+        const pixelSize = size / height;
         const renderChar = (charX, char) => {
-            const pixelSize = size/height;
             const fontCode = chars[char.charCodeAt()] || '';
-            const binaryChar = isNumber(fontCode) ? fontCode : fontCode.codePointAt();
+            let bin = Number.isInteger( fontCode ) ? fontCode : fontCode.codePointAt();
+            const binary = ( bin || 0 ).toString( 2 );
+            const width = Math.ceil( binary.length / height );
 
-            const binary = (binaryChar || 0).toString(2);
+            ctx.fillStyle = color;
+            for ( let col = width; col > 0; col-- ) {
+                for ( let row = height; row > 0 && bin > 0; row-- ) {
+                    if ( bin & 1 ) {
+                        ctx.fillRect( x + charX + col * pixelSize, y + row * pixelSize, pixelSize, pixelSize );
+                    }
+                    bin >>= 1
+                }
+            }
 
-            const width = Math.ceil(binary.length / height);
-            const marginX = charX + pixelSize;
-            const formattedBinary = binary.padStart(width * height, 0);
-            const binaryCols = bin2arr(formattedBinary, height);
-
-            console.debug('Rendering char', char, char.charCodeAt(), fontCode, binaryChar, binaryCols);
-
-            binaryCols.map((column, colPos) =>
-                [...column].map((pixel, pixPos) => {
-                    ctx.fillStyle = !+pixel ? 'transparent' : color; // pixel == 0 ?
-                    ctx.fillRect(x + marginX + colPos * pixelSize, y + pixPos * pixelSize, pixelSize, pixelSize);
-                })
-            );
-
-            return charX + (width+1)*pixelSize
+            return charX + ( width + 1 ) * pixelSize;
         };
 
         console.debug('Rendering string', string);
