@@ -18,13 +18,16 @@ export const initFont = ({ height=DEFAULT_CHAR_HEIGHT, ...chars }={}, ctx) => {
             let bin = Number.isInteger( fontCode ) ? fontCode : fontCode.codePointAt();
             const binary = ( bin || 0 ).toString( 2 );
             const width = Math.ceil( binary.length / height );
+            const mask = ( 1 << height ) - 1;
 
             ctx.fillStyle = color;
             for ( let col = width; col > 0; col-- ) {
-                for ( let row = height; row > 0 && bin > 0; row-- ) {
-                    bin & 1 && ctx.fillRect( x + charX + col * pixelSize, y + row * pixelSize, pixelSize, pixelSize );
-                    bin >>= 1
+                let rowPos = height;
+                for ( let row = bin & mask; row > 0; row >>= 1 ) {
+                    row & 1 && ctx.fillRect( x + charX + col * pixelSize, y + rowPos * pixelSize, pixelSize, pixelSize );
+                    rowPos--;
                 }
+                bin >>= height;
             }
 
             return charX + ( width + 1 ) * pixelSize;
