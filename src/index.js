@@ -27,6 +27,8 @@ export const initFont = ({ height=DEFAULT_CHAR_HEIGHT, ...chars }={}, ctx) => {
                     if ( row & 1 ) {
                         let y1 = y + rowPos * pixelSize, h = pixelSize;
 
+                        // This while loop greatly reduces the amount of draw calls.
+                        // If you need a few more bytes, you could remove this.
                         while ( ( row >> 1 ) & 1 ) {
                             y1 -= pixelSize;
                             h += pixelSize;
